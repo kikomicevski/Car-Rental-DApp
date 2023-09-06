@@ -9,7 +9,7 @@ export const CAR_DATA = [
   [
     {
       name: "Audi A5",
-      price: "60",
+      price: "0.037",
       img: AudiA5,
       model: "A5",
       mark: "Audi",
@@ -23,7 +23,7 @@ export const CAR_DATA = [
   [
     {
       name: "VW Arteon",
-      price: "50",
+      price: "0.031",
       img: VWArteon,
       model: "Arteon",
       mark: "VW",
@@ -37,7 +37,7 @@ export const CAR_DATA = [
   [
     {
       name: "Toyota Corolla",
-      price: "37",
+      price: "0.23",
       img: ToyotaCorolla,
       model: "Corolla",
       mark: "Toyota",
@@ -51,7 +51,7 @@ export const CAR_DATA = [
   [
     {
       name: "BMW 530",
-      price: "55",
+      price: "0.034",
       img: Bmw5,
       model: "530",
       mark: "BMW",
@@ -65,7 +65,7 @@ export const CAR_DATA = [
   [
     {
       name: "Kia Sportage",
-      price: "40",
+      price: "0.025",
       img: KiaSportage,
       model: "Sportage",
       mark: "Kia",
@@ -79,7 +79,7 @@ export const CAR_DATA = [
   [
     {
       name: "Mini Cooper",
-      price: "35",
+      price: "0.02",
       img: Mini,
       model: "Cooper",
       mark: "Mini",

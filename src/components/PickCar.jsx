@@ -90,7 +90,6 @@ function PickCar() {
                   Mini Cooper
                 </button>
               </div>
-
               {active === "FirstCar" && <CarBox data={CAR_DATA} carID={0} />}
               {active === "SecondCar" && <CarBox data={CAR_DATA} carID={1} />}
               {active === "ThirdCar" && <CarBox data={CAR_DATA} carID={2} />}

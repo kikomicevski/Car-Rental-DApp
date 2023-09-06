@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { ethers } from "ethers";
+import { CAR_DATA } from './CarData';
 import CarAudi from "../images/cars-big/audi-box.png";
 import CarVW from "../images/cars-big/arteon-box.jpg";
 import CarToyota from "../images/cars-big/corolla-box.png";
@@ -6,9 +8,17 @@ import CarBmw from "../images/cars-big/bmw-box.png";
 import CarKia from "../images/cars-big/sportage-box.png";
 import CarMini from "../images/cars-big/mini-box.png";
 
+
+import contractABI from '../ABI/abi.json';
+const contractAddress = "0x8d1aD974F97AE8671E8F345f254a5CFD22CE21BF";
+
+
+const provider = new ethers.providers.Web3Provider(window.ethereum);
+const signer = provider.getSigner();
+const carRentalContract = new ethers.Contract(contractAddress, contractABI, signer);
+
 function BookCar() {
   const [modal, setModal] = useState(false);
-
   // booking car
   const [carType, setCarType] = useState("");
   const [pickUp, setPickUp] = useState("");
@@ -61,9 +71,10 @@ function BookCar() {
   };
 
   // open modal when all inputs are fulfilled
-  const openModal = (e) => {
+  const openModal = async (e) => {
     e.preventDefault();
     const errorMsg = document.querySelector(".error-message");
+
     if (
       pickUp === "" ||
       dropOff === "" ||
@@ -72,6 +83,12 @@ function BookCar() {
       carType === ""
     ) {
       errorMsg.style.display = "flex";
+      errorMsg.textContent = "Missing field";
+    } else if (
+      pickTime >= dropTime || pickTime < new Date()
+    ) {
+      errorMsg.style.display = "flex";
+      errorMsg.textContent = "Invalid date range";
     } else {
       setModal(!modal);
       const modalDiv = document.querySelector(".booking-modal");
@@ -90,12 +107,76 @@ function BookCar() {
   }, [modal]);
 
   // confirm modal booking
-  const confirmBooking = (e) => {
+  const confirmBooking = async (e) => {
     e.preventDefault();
-    setModal(!modal);
-    const doneMsg = document.querySelector(".booking-done");
-    doneMsg.style.display = "flex";
+    const errorMsg = document.querySelector(".error-message");
+  
+    if (
+      name === "" ||
+      lastName === "" ||
+      phone === "" ||
+      age === "" ||
+      email === "" ||
+      address === "" ||
+      city === "" ||
+      zipcode === ""
+    ) {
+      errorMsg.style.display = "flex";
+      errorMsg.textContent = "Missing field";
+    } else {
+      const pickUpDate = new Date(pickTime).getTime() / 1000;
+      const dropOffDate = new Date(dropTime).getTime() / 1000;
+  
+      try {
+        // Calculate the duration of the rental in seconds
+        const pickUpDateInSeconds = new Date(pickTime).getTime() / 1000;
+        const dropOffDateInSeconds = new Date(dropTime).getTime() / 1000;
+        const durationInSeconds = dropOffDateInSeconds - pickUpDateInSeconds;
+  
+        // Find the selected car in the CAR_DATA array
+        const selectedCar = CAR_DATA.find((car) => car[0].name === carType);
+  
+        if (!selectedCar) {
+          errorMsg.style.display = "flex";
+          errorMsg.textContent = "Invalid car type";
+        } else {
+          // Extract the price of the selected car
+          const carPrice = parseFloat(selectedCar[0].price);
+  
+          // Calculate the total cost based on the car price and duration
+          const totalCost = (carPrice * durationInSeconds) / (24 * 3600); // Convert to days
+  
+          // You can display the total cost to the user or proceed with payment here
+          console.log(`Total cost: ETH ${totalCost.toFixed(2)}`);
+  
+          // Prompt the user to pay using MetaMask
+          const paymentAmount = ethers.utils.parseUnits(totalCost.toFixed(2), 'ether'); // Convert to wei
+          const gasLimit = 300000;
+  
+          // Send the payment transaction to the carRentalContract
+          const transaction = await signer.sendTransaction({
+            to: carRentalContract.address, // Replace with the address of your carRentalContract
+            value: paymentAmount,
+            gasLimit: gasLimit,
+          });
+          
+          // Check if the transaction was successful
+          await transaction.wait();
+  
+          errorMsg.style.display = "none";
+          setModal(!modal);
+          const doneMsg = document.querySelector(".booking-done");
+          doneMsg.style.display = "flex";
+        }
+      } catch (error) {
+        // Handle errors (e.g., user rejected the transaction)
+        console.error("Payment error:", error);
+        errorMsg.style.display = "flex";
+        errorMsg.textContent = "Payment failed";
+      }
+    }
   };
+  
 
   // taking value of booking inputs
   const handleCar = (e) => {
@@ -169,7 +250,7 @@ function BookCar() {
               </p>
 
               <p className="booking-done">
-                Check your email to confirm an order.{" "}
+                Check your email for confirmation.{" "}
                 <i onClick={hideMessage} className="fa-solid fa-xmark"></i>
               </p>
 
@@ -265,17 +346,7 @@ function BookCar() {
           <h2>Complete Reservation</h2>
           <i onClick={openModal} className="fa-solid fa-xmark"></i>
         </div>
-        {/* message */}
-        <div className="booking-modal__message">
-          <h4>
-            <i className="fa-solid fa-circle-info"></i> Upon completing this
-            reservation enquiry, you will receive:
-          </h4>
-          <p>
-            Your rental voucher to produce on arrival at the rental desk and a
-            toll-free customer support number.
-          </p>
-        </div>
+  
         {/* car info */}
         <div className="booking-modal__car-info">
           <div className="dates-div">
